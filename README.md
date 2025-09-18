@@ -183,7 +183,15 @@
     let size = Math.min(window.innerWidth * 0.9, 520);
     canvas.width = size;
     canvas.height = size;
- 
+
+    const sectors = [
+      { label: "1000 ֏", color: "#FFDDC1" },
+      { label: "2000 ֏", color: "#FFABAB" },
+      { label: "5000 ֏", color: "#FFC3A0" },
+      { label: "10000 ֏", color: "#D5AAFF" },
+      { label: "1500 ֏", color: "#85E3FF" },
+      { label: "2500 ֏", color: "#B9FBC0" },
+    ];
 
     sectors.forEach((s) => {
       const div = document.createElement("div");
