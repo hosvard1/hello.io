@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="hy">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -66,7 +66,7 @@
   </div>
 
   <script>
-    // Կոնֆիգուրացիա — փոխել տոկոսները դրամների
+    // Կոնֆիգուրացիա — դրամով շահումներ
     const SECTORS = [
       {label: '1000 ֏', color: '#FFB6C1'},
       {label: 'Անվճար պտույտ', color: '#FFD580'},
@@ -98,6 +98,7 @@
       for(let i=0;i<count;i++){
         const start = i*angle;
         ctx.beginPath();
+        ctx.movePath = 0;
         ctx.moveTo(0,0);
         ctx.arc(0,0,radius,start,start+angle);
         ctx.closePath();
@@ -172,17 +173,16 @@
       isSpinning = true;
       const count = SECTORS.length;
       const sectorSize = 360 / count;
+
+      // Ընտրում ենք սեկտորը նախապես
       const chosenIndex = Math.floor(Math.random()*count);
-      const randomOffset = Math.random()*sectorSize;
-      const targetDeg = 360*6 + (360 - (chosenIndex*sectorSize + sectorSize/2)) + randomOffset;
+      const targetDeg = 360*6 + (chosenIndex*sectorSize + sectorSize/2);
       const duration = 4500 + Math.random()*1200;
 
-      animateRotation(targetDeg, duration).then(finalDeg=>{
-        const normalized = (360 - (finalDeg % 360)) % 360;
-        const idx = Math.floor(normalized / sectorSize) % count;
-        const prize = SECTORS[idx].label;
+      animateRotation(targetDeg, duration).then(()=>{
+        const prize = SECTORS[chosenIndex].label;
         lastPrizeEl.textContent = prize;
-        openModal(prize, idx+1);
+        openModal(prize, chosenIndex+1);
         isSpinning = false;
       });
     }
@@ -200,7 +200,7 @@
           currentRotation = deg * Math.PI/180;
           drawWheel(currentRotation);
           if(t < 1) requestAnimationFrame(frame);
-          else resolve(targetDeg % 360);
+          else resolve();
         }
         requestAnimationFrame(frame);
       });
