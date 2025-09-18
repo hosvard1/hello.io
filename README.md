@@ -2,92 +2,74 @@
 <html lang="hy">
 <head>
   <meta charset="UTF-8">
-  <title>Բոնուսային Ռուլետկա</title>
+  <title>Ռուլետկա ֏</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
       margin: 0;
       padding: 0;
-      font-family: sans-serif;
-      background: #f5f5f5;
+      background: #f0f0f0;
     }
 
     h1 {
-      margin-top: 20px;
+      margin: 20px 0 10px;
     }
 
     canvas {
-      max-width: 90vw;
+      margin-top: 10px;
+      max-width: 95vw; /* 📱 Canvas հարմարեցված */
       height: auto;
-      margin-top: 20px;
     }
 
-    .controls {
+    #spin {
       margin-top: 15px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    button {
-      padding: 12px 20px;
+      padding: 12px 24px;
       font-size: 1.1rem;
-      border-radius: 8px;
+      background: crimson;
+      color: white;
       border: none;
+      border-radius: 8px;
       cursor: pointer;
       transition: 0.2s;
     }
 
-    button:hover {
+    #spin:hover {
       opacity: 0.9;
     }
 
-    #spin {
-      background: red;
-      color: #fff;
-    }
-
-    #reset {
-      background: #1976d2;
-      color: #fff;
+    #result {
+      margin-top: 15px;
+      font-size: 1.2rem;
+      font-weight: bold;
     }
 
     /* 📱 Մոբայլի համար */
     @media (max-width: 600px) {
-      button {
-        flex: 1 1 100%;
+      #spin {
+        width: 90%;
         font-size: 1rem;
         padding: 14px;
       }
-    }
-
-    #result {
-      margin-top: 20px;
-      font-size: 1.3rem;
-      font-weight: bold;
+      #result {
+        font-size: 1rem;
+        text-align: center;
+      }
     }
   </style>
 </head>
 <body>
   <h1>🎁 Բոնուսային Ռուլետկա</h1>
   <canvas id="wheel" width="400" height="400"></canvas>
-
-  <div class="controls">
-    <button id="spin">Կրքել</button>
-    <button id="reset">Վերականգնել</button>
-  </div>
-
+  <button id="spin">Կրքել</button>
   <div id="result"></div>
 
   <script>
     const canvas = document.getElementById("wheel");
     const ctx = canvas.getContext("2d");
     const spinBtn = document.getElementById("spin");
-    const resetBtn = document.getElementById("reset");
     const resultDiv = document.getElementById("result");
 
     const SECTORS = [
@@ -112,6 +94,7 @@
 
     function drawWheel() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       SECTORS.forEach((label, i) => {
         const angle = i * sectorAngle + currentAngle;
         ctx.beginPath();
@@ -121,6 +104,7 @@
         ctx.lineTo(canvas.width / 2, canvas.height / 2);
         ctx.fill();
 
+        // Տեքստ
         ctx.save();
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(angle + sectorAngle / 2);
@@ -131,7 +115,7 @@
         ctx.restore();
       });
 
-      // Սլաքը
+      // Կարմիր սլաք
       ctx.fillStyle = "red";
       ctx.beginPath();
       ctx.moveTo(canvas.width / 2, 0);
@@ -150,7 +134,7 @@
       // Ընտրում ենք սեկտոր
       const chosenIndex = Math.floor(Math.random() * SECTORS.length);
 
-      // Պտույտի վերջնական անկյուն
+      // Հաշվում ենք վերջնական անկյունը՝ հենց այդ սեկտորի վրա կանգնելու համար
       const finalAngle =
         (2 * Math.PI * 5) + (2 * Math.PI - chosenIndex * sectorAngle - sectorAngle / 2);
 
@@ -177,11 +161,6 @@
     }
 
     spinBtn.addEventListener("click", spinWheel);
-    resetBtn.addEventListener("click", () => {
-      currentAngle = 0;
-      resultDiv.innerHTML = "";
-      drawWheel();
-    });
   </script>
 </body>
 </html>
