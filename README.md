@@ -1,166 +1,224 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="hy">
 <head>
-  <meta charset="UTF-8">
-  <title>Ռուլետկա ֏</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Բոնուսային ռուլետկա — spin</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 0;
-      background: #f0f0f0;
-    }
-
-    h1 {
-      margin: 20px 0 10px;
-    }
-
-    canvas {
-      margin-top: 10px;
-      max-width: 95vw; /* 📱 Canvas հարմարեցված */
-      height: auto;
-    }
-
-    #spin {
-      margin-top: 15px;
-      padding: 12px 24px;
-      font-size: 1.1rem;
-      background: crimson;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    #spin:hover {
-      opacity: 0.9;
-    }
-
-    #result {
-      margin-top: 15px;
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-
-    /* 📱 Մոբայլի համար */
-    @media (max-width: 600px) {
-      #spin {
-        width: 90%;
-        font-size: 1rem;
-        padding: 14px;
-      }
-      #result {
-        font-size: 1rem;
-        text-align: center;
-      }
-    }
+    :root{--size:520px}
+    body{font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:linear-gradient(180deg,#f6f9ff,#ffffff)}
+    .wrap{width:100%;max-width:900px;padding:20px;display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:center}
+    .card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(20,30,50,0.08)}
+    .wheel-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+    canvas#wheel{width:var(--size);height:var(--size);border-radius:50%}
+    .center-btn{position:relative;width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#ff6b6b,#ff3b3b);color:#fff;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(255,80,80,0.25);user-select:none}
+    .spin-controls{text-align:center}
+    .spin-btn{display:inline-block;padding:10px 18px;border-radius:10px;background:#2b7cff;color:#fff;text-decoration:none;font-weight:700;cursor:pointer;border:none}
+    .indicator{position:relative;width:100%;height:0}
+    .pointer{position:absolute;left:50%;transform:translateX(-50%);top:-12px;width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:20px solid #ff4d4f}
+    .info{padding:12px}
+    .prize{font-size:18px;font-weight:700;color:#1f2937}
+    .sidebar{display:flex;flex-direction:column;gap:12px}
+    .list{display:flex;flex-direction:column;gap:6px}
+    .sector-item{display:flex;justify-content:space-between;padding:8px;border-radius:8px;background:#fafbff}
+    .small{font-size:13px;color:#6b7280}
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,16,0.45);opacity:0;pointer-events:none;transition:opacity .18s}
+    .modal.open{opacity:1;pointer-events:auto}
+    .modal-card{background:#fff;padding:20px;border-radius:12px;min-width:260px;max-width:90vw;text-align:center}
+    .close{margin-top:12px;padding:8px 12px;border-radius:8px;background:#eef2ff;border:none;cursor:pointer}
+    @media (max-width:880px){.wrap{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <h1>🎁 Բոնուսային Ռուլետկա</h1>
-  <canvas id="wheel" width="400" height="400"></canvas>
-  <button id="spin">Կրքել</button>
-  <div id="result"></div>
+  <div class="wrap">
+    <div class="card wheel-wrap">
+      <div style="position:relative;display:inline-block">
+        <div class="indicator"><div class="pointer"></div></div>
+        <canvas id="wheel" width="520" height="520" aria-label="Բոնուսային ռուլետկա"></canvas>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="center-btn" id="spinCenter">SPIN</div>
+        <div class="spin-controls">
+          <button id="spinBtn" class="spin-btn">Կրակել</button>
+          <div class="small">Մնացորդ: <span id="balance">3</span> փորձ</div>
+        </div>
+      </div>
+
+      <div class="info">
+        <div class="prize">Վերջին շահում: <span id="lastPrize">—</span></div>
+      </div>
+    </div>
+
+    <div class="card sidebar">
+      <div style="font-weight:800">Ռուլետկայի սեկտորներ</div>
+      <div class="list" id="sectorsList"></div>
+      <div style="margin-top:auto;font-size:13px;color:#6b7280">Պահպանեք էջը դոմեյնում կամ բացեք տեղային՝ <code>python -m http.server</code></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div id="modalText" style="font-weight:800;font-size:18px">Շնորհավորանքներ!</div>
+      <div id="modalSub" style="margin-top:8px;color:#374151"></div>
+      <button class="close" id="closeModal">Փակել</button>
+    </div>
+  </div>
 
   <script>
-    const canvas = document.getElementById("wheel");
-    const ctx = canvas.getContext("2d");
-    const spinBtn = document.getElementById("spin");
-    const resultDiv = document.getElementById("result");
-
+    // Կոնֆիգուրացիա — դրամով շահումներ
     const SECTORS = [
-      "1000 ֏",
-      "Անվճար փորձ",
-      "5000 ֏",
-      "2000 ֏",
-      "Շնորհակալություն",
-      "10000 ֏",
-      "3000 ֏",
-      "Հաջողություն հաջորդ անգամ"
+      {label: '1000 ֏', color: '#FFB6C1'},
+      {label: 'Անվճար պտույտ', color: '#FFD580'},
+      {label: '5000 ֏', color: '#B5EAEA'},
+      {label: '2000 ֏', color: '#C2F784'},
+      {label: 'Չկա շահում', color: '#E6E6FA'},
+      {label: '10000 ֏', color: '#F5C9C9'},
+      {label: '3000 ֏', color: '#D6CDEA'},
+      {label: 'Հատուկ նվեր', color: '#FFC4E1'}
     ];
 
-    const colors = [
-      "#FFDDC1", "#FFABAB", "#FFC3A0", "#D5AAFF",
-      "#85E3FF", "#B9FBC0", "#FFFFBA", "#FF9CEE"
-    ];
+    const canvas = document.getElementById('wheel');
+    const ctx = canvas.getContext('2d');
+    const center = {x: canvas.width/2, y: canvas.height/2};
+    const radius = Math.min(canvas.width, canvas.height)/2 - 6;
 
-    const sectorAngle = (2 * Math.PI) / SECTORS.length;
-    let currentAngle = 0;
-    let spinning = false;
+    const sectorsListEl = document.getElementById('sectorsList');
+    const lastPrizeEl = document.getElementById('lastPrize');
+    const balanceEl = document.getElementById('balance');
 
-    function drawWheel() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function drawWheel(rotation=0){
+      const count = SECTORS.length;
+      const angle = (Math.PI*2)/count;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.save();
+      ctx.translate(center.x, center.y);
+      ctx.rotate(rotation);
 
-      SECTORS.forEach((label, i) => {
-        const angle = i * sectorAngle + currentAngle;
+      for(let i=0;i<count;i++){
+        const start = i*angle;
         ctx.beginPath();
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.moveTo(canvas.width / 2, canvas.height / 2);
-        ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, angle, angle + sectorAngle);
-        ctx.lineTo(canvas.width / 2, canvas.height / 2);
+        ctx.movePath = 0;
+        ctx.moveTo(0,0);
+        ctx.arc(0,0,radius,start,start+angle);
+        ctx.closePath();
+        ctx.fillStyle = SECTORS[i].color;
         ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-        // Տեքստ
         ctx.save();
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(angle + sectorAngle / 2);
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#000";
-        ctx.font = "bold 16px sans-serif";
-        ctx.fillText(label, canvas.width / 2 - 10, 10);
+        ctx.rotate(start + angle/2);
+        ctx.translate(radius*0.63, 0);
+        ctx.rotate(Math.PI/2);
+        ctx.fillStyle = '#111827';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        wrapText(ctx, SECTORS[i].label, 0, 0, 80, 18);
         ctx.restore();
-      });
+      }
 
-      // Կարմիր սլաք
-      ctx.fillStyle = "red";
       ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 0);
-      ctx.lineTo(canvas.width / 2 - 15, 30);
-      ctx.lineTo(canvas.width / 2 + 15, 30);
-      ctx.closePath();
-      ctx.fill();
+      ctx.arc(0,0,radius,0,Math.PI*2);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function wrapText(context, text, x, y, maxWidth, lineHeight){
+      const words = text.split(' ');
+      let line = '';
+      let metrics;
+      let currY = y;
+      for(let n = 0; n < words.length; n++){
+        const testLine = line + words[n] + ' ';
+        metrics = context.measureText(testLine);
+        if(metrics.width > maxWidth && n > 0){
+          context.fillText(line, x, currY);
+          line = words[n] + ' ';
+          currY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      context.fillText(line, x, currY);
+    }
+
+    function renderList(){
+      sectorsListEl.innerHTML='';
+      SECTORS.forEach((s,i)=>{
+        const el = document.createElement('div');
+        el.className='sector-item';
+        el.innerHTML = `<div style="font-weight:700">${s.label}</div><div class="small">#${i+1}</div>`;
+        el.style.background = 'linear-gradient(90deg, rgba(255,255,255,0.4), rgba(0,0,0,0.02))';
+        sectorsListEl.appendChild(el);
+      });
     }
 
     drawWheel();
+    renderList();
 
-    function spinWheel() {
-      if (spinning) return;
-      spinning = true;
+    let isSpinning=false;
+    let currentRotation = 0;
 
-      // Ընտրում ենք սեկտոր
-      const chosenIndex = Math.floor(Math.random() * SECTORS.length);
+    function spin(){
+      if(isSpinning) return;
+      const attempts = Number(balanceEl.textContent);
+      if(attempts <= 0){ alert('Փորձերը վերջացել են'); return; }
+      balanceEl.textContent = attempts - 1;
 
-      // Հաշվում ենք վերջնական անկյունը՝ հենց այդ սեկտորի վրա կանգնելու համար
-      const finalAngle =
-        (2 * Math.PI * 5) + (2 * Math.PI - chosenIndex * sectorAngle - sectorAngle / 2);
+      isSpinning = true;
+      const count = SECTORS.length;
+      const sectorSize = 360 / count;
 
-      let start = null;
-      const duration = 4000;
+      // Ընտրում ենք սեկտորը նախապես
+      const chosenIndex = Math.floor(Math.random()*count);
+      const targetDeg = 360*6 + (chosenIndex*sectorSize + sectorSize/2);
+      const duration = 4500 + Math.random()*1200;
 
-      function animate(timestamp) {
-        if (!start) start = timestamp;
-        const progress = (timestamp - start) / duration;
-        if (progress < 1) {
-          const easeOut = 1 - Math.pow(1 - progress, 3);
-          currentAngle = finalAngle * easeOut;
-          drawWheel();
-          requestAnimationFrame(animate);
-        } else {
-          currentAngle = finalAngle;
-          drawWheel();
-          spinning = false;
-          resultDiv.innerHTML = "🎉 Դուք շահեցիք: <b>" + SECTORS[chosenIndex] + "</b>";
-        }
-      }
-
-      requestAnimationFrame(animate);
+      animateRotation(targetDeg, duration).then(()=>{
+        const prize = SECTORS[chosenIndex].label;
+        lastPrizeEl.textContent = prize;
+        openModal(prize, chosenIndex+1);
+        isSpinning = false;
+      });
     }
 
-    spinBtn.addEventListener("click", spinWheel);
+    function animateRotation(targetDeg, duration){
+      return new Promise(resolve=>{
+        const start = performance.now();
+        const startDeg = currentRotation * 180/Math.PI;
+        const delta = targetDeg - startDeg;
+        function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+        function frame(now){
+          const t = Math.min(1, (now - start)/duration);
+          const eased = easeOutCubic(t);
+          const deg = startDeg + delta*eased;
+          currentRotation = deg * Math.PI/180;
+          drawWheel(currentRotation);
+          if(t < 1) requestAnimationFrame(frame);
+          else resolve();
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+
+    const modal = document.getElementById('modal');
+    const modalText = document.getElementById('modalText');
+    const modalSub = document.getElementById('modalSub');
+    document.getElementById('closeModal').addEventListener('click', ()=>{ modal.classList.remove('open'); });
+    function openModal(prize, idx){
+      modalText.textContent = 'Դուք շահեցիք: ' + prize;
+      modalSub.textContent = `Սեկտոր №${idx}`;
+      modal.classList.add('open');
+    }
+
+    document.getElementById('spinBtn').addEventListener('click', spin);
+    document.getElementById('spinCenter').addEventListener('click', spin);
+    window.addEventListener('keydown', (e)=>{ if(e.code === 'Space') { e.preventDefault(); spin(); } });
   </script>
 </body>
 </html>
