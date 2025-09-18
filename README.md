@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Бонусная рулетка — spin</title>
+  <title>Բոնուսային ռուլետկա — spin</title>
   <style>
     :root{--size:520px}
     body{font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:linear-gradient(180deg,#f6f9ff,#ffffff)}
@@ -34,48 +34,48 @@
     <div class="card wheel-wrap">
       <div style="position:relative;display:inline-block">
         <div class="indicator"><div class="pointer"></div></div>
-        <canvas id="wheel" width="520" height="520" aria-label="Бонусная рулетка"></canvas>
+        <canvas id="wheel" width="520" height="520" aria-label="Բոնուսային ռուլետկա"></canvas>
       </div>
 
       <div style="display:flex;gap:12px;align-items:center">
         <div class="center-btn" id="spinCenter">SPIN</div>
         <div class="spin-controls">
-          <button id="spinBtn" class="spin-btn">Крутануть</button>
-          <div class="small">Баланс: <span id="balance">3</span> попытки</div>
+          <button id="spinBtn" class="spin-btn">Կրակել</button>
+          <div class="small">Մնացորդ: <span id="balance">3</span> փորձ</div>
         </div>
       </div>
 
       <div class="info">
-        <div class="prize">Последний приз: <span id="lastPrize">—</span></div>
+        <div class="prize">Վերջին շահում: <span id="lastPrize">—</span></div>
       </div>
     </div>
 
     <div class="card sidebar">
-      <div style="font-weight:800">Секции рулетки</div>
+      <div style="font-weight:800">Ռուլետկայի սեկտորներ</div>
       <div class="list" id="sectorsList"></div>
-      <div style="margin-top:auto;font-size:13px;color:#6b7280">Сохраните страницу на домене или запустите локально: <code>python -m http.server</code></div>
+      <div style="margin-top:auto;font-size:13px;color:#6b7280">Պահպանեք էջը դոմեյնում կամ բացեք տեղային՝ <code>python -m http.server</code></div>
     </div>
   </div>
 
   <div class="modal" id="modal">
     <div class="modal-card">
-      <div id="modalText" style="font-weight:800;font-size:18px">Поздравляем!</div>
+      <div id="modalText" style="font-weight:800;font-size:18px">Շնորհավորանքներ!</div>
       <div id="modalSub" style="margin-top:8px;color:#374151"></div>
-      <button class="close" id="closeModal">Закрыть</button>
+      <button class="close" id="closeModal">Փակել</button>
     </div>
   </div>
 
   <script>
-    // Конфигурация рулетки: подписи и цвета
+    // Կոնֆիգուրացիա — փոխել տոկոսները դրամների
     const SECTORS = [
-      {label: '10%', color: '#FFB6C1'},
-      {label: 'Бесплатно', color: '#FFD580'},
-      {label: '50 монет', color: '#B5EAEA'},
-      {label: '20%', color: '#C2F784'},
-      {label: 'Нет приза', color: '#E6E6FA'},
-      {label: '100 монет', color: '#F5C9C9'},
-      {label: '5%', color: '#D6CDEA'},
-      {label: 'Секрет', color: '#FFC4E1'}
+      {label: '1000 ֏', color: '#FFB6C1'},
+      {label: 'Անվճար պտույտ', color: '#FFD580'},
+      {label: '5000 ֏', color: '#B5EAEA'},
+      {label: '2000 ֏', color: '#C2F784'},
+      {label: 'Չկա շահում', color: '#E6E6FA'},
+      {label: '10000 ֏', color: '#F5C9C9'},
+      {label: '3000 ֏', color: '#D6CDEA'},
+      {label: 'Հատուկ նվեր', color: '#FFC4E1'}
     ];
 
     const canvas = document.getElementById('wheel');
@@ -87,7 +87,6 @@
     const lastPrizeEl = document.getElementById('lastPrize');
     const balanceEl = document.getElementById('balance');
 
-    // Нарисовать кольцо
     function drawWheel(rotation=0){
       const count = SECTORS.length;
       const angle = (Math.PI*2)/count;
@@ -104,12 +103,10 @@
         ctx.closePath();
         ctx.fillStyle = SECTORS[i].color;
         ctx.fill();
-        // линия
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // текст
         ctx.save();
         ctx.rotate(start + angle/2);
         ctx.translate(radius*0.63, 0);
@@ -121,7 +118,6 @@
         ctx.restore();
       }
 
-      // внешний круг
       ctx.beginPath();
       ctx.arc(0,0,radius,0,Math.PI*2);
       ctx.lineWidth = 6;
@@ -134,7 +130,6 @@
     function wrapText(context, text, x, y, maxWidth, lineHeight){
       const words = text.split(' ');
       let line = '';
-      let test = '';
       let metrics;
       let currY = y;
       for(let n = 0; n < words.length; n++){
@@ -151,7 +146,6 @@
       context.fillText(line, x, currY);
     }
 
-    // Инициализация списка
     function renderList(){
       sectorsListEl.innerHTML='';
       SECTORS.forEach((s,i)=>{
@@ -166,33 +160,25 @@
     drawWheel();
     renderList();
 
-    // Логика вращения
     let isSpinning=false;
-    let currentRotation = 0; // в радианах
+    let currentRotation = 0;
 
     function spin(){
       if(isSpinning) return;
       const attempts = Number(balanceEl.textContent);
-      if(attempts <= 0){ alert('Попытки кончились'); return; }
+      if(attempts <= 0){ alert('Փորձերը վերջացել են'); return; }
       balanceEl.textContent = attempts - 1;
 
       isSpinning = true;
-      // выбираем случайный результат
       const count = SECTORS.length;
       const sectorSize = 360 / count;
-      // хотим, чтобы результат выглядел честно: добавим случайный сектор
       const chosenIndex = Math.floor(Math.random()*count);
-
-      // вычислим нужный угол в градусах так, чтобы выбранный сектор оказался под указателем (0 градусов сверху)
-      // canvas рисует по часовой от правого направления, но мы вращаем весь canvas,
-      // поэтому нужно обратить направление и сдвинуть на половину сектора
-      const randomOffset = Math.random()*sectorSize; // чуть-чуть внутри сектора
-      const targetDeg = 360*6 + (360 - (chosenIndex*sectorSize + sectorSize/2)) + randomOffset; // минимум 6 оборотов
-      const duration = 4500 + Math.random()*1200; // ms
+      const randomOffset = Math.random()*sectorSize;
+      const targetDeg = 360*6 + (360 - (chosenIndex*sectorSize + sectorSize/2)) + randomOffset;
+      const duration = 4500 + Math.random()*1200;
 
       animateRotation(targetDeg, duration).then(finalDeg=>{
-        // определяем сектор
-        const normalized = (360 - (finalDeg % 360)) % 360; // угол сверху
+        const normalized = (360 - (finalDeg % 360)) % 360;
         const idx = Math.floor(normalized / sectorSize) % count;
         const prize = SECTORS[idx].label;
         lastPrizeEl.textContent = prize;
@@ -201,7 +187,6 @@
       });
     }
 
-    // анимация вращения через CSS-like easing с requestAnimationFrame
     function animateRotation(targetDeg, duration){
       return new Promise(resolve=>{
         const start = performance.now();
@@ -221,25 +206,19 @@
       });
     }
 
-    // Модальное окно
     const modal = document.getElementById('modal');
     const modalText = document.getElementById('modalText');
     const modalSub = document.getElementById('modalSub');
     document.getElementById('closeModal').addEventListener('click', ()=>{ modal.classList.remove('open'); });
     function openModal(prize, idx){
-      modalText.textContent = 'Вы выиграли: ' + prize;
-      modalSub.textContent = `Сектор №${idx}`;
+      modalText.textContent = 'Դուք շահեցիք: ' + prize;
+      modalSub.textContent = `Սեկտոր №${idx}`;
       modal.classList.add('open');
     }
 
-    // Привязка кнопок
     document.getElementById('spinBtn').addEventListener('click', spin);
     document.getElementById('spinCenter').addEventListener('click', spin);
-
-    // Горячая клавиша: пробел
     window.addEventListener('keydown', (e)=>{ if(e.code === 'Space') { e.preventDefault(); spin(); } });
-
   </script>
 </body>
 </html>
- 
